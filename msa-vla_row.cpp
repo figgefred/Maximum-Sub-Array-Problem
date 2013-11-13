@@ -1,10 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+//#include <string.h>
 #include <omp.h>
-#include <string.h>
+#include <iostream>
+#include <string>
 
 //#define _PRINT_INFO 
+
+using namespace std;
 
 typedef struct result {
     int top;
@@ -52,6 +56,11 @@ int main(int argc, char* argv[]) {
     if(input_file == NULL) {
         usage(argv[0]);
     }
+
+    int numthreads   = omp_get_num_procs();
+    //int numthreads   = 4;
+    omp_set_num_threads(numthreads);
+    cout << "Running with " << numthreads << " threads.... \n\n";
 
     // Read the matrix
     int dim = 0;

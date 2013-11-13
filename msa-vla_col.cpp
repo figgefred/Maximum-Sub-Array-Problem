@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
         usage(argv[0]);
     }
 
-    //int numthreads   = omp_get_num_procs();
-    int numthreads   = 4;
+    int numthreads   = omp_get_num_procs();
+    //int numthreads   = 4;
     omp_set_num_threads(numthreads);
     cout << "Running with " << numthreads << " threads.... \n\n";
 
