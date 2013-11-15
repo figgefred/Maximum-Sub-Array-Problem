@@ -46,6 +46,9 @@ void clear(int* a, int len) {
     }
 }
 
+int** mat;
+int** ps;
+
 int main(int argc, char* argv[]) {
     if(argc != 2) {
         usage(argv[0]);
@@ -61,13 +64,14 @@ int main(int argc, char* argv[]) {
     //int numthreads   = 4;
     omp_set_num_threads(numthreads);
     cout << "Running with " << numthreads << " threads.... \n\n";
-
     // Read the matrix
     int dim = 0;
     fscanf(input_file, "%u\n", &dim);
-    int mat[dim][dim];
+    //int mat[dim][dim];
+    mat = new int*[dim];
     int element = 0;
     for(int i=0; i<dim; i++) {
+        mat[i] = new int[dim];
         for(int j=0; j<dim; j++) {
             if (j != (dim-1)) 
                 fscanf(input_file, "%d\t", &element);
@@ -93,11 +97,17 @@ int main(int argc, char* argv[]) {
     // http://stackoverflow.com/questions/2643908/getting-the-submatrix-with-maximum-sum
     long alg_start = get_usecs();
     // Compute vertical prefix sum
-    int ps[dim][dim];
+    //int ps[dim][dim];
+    ps = new int*[dim];
+    for(int i = 0; i < dim; i++)
+    {
+        ps[i] = new int[dim];
+    }
 
 #pragma omp parallel 
     {
         printf("thread-%i: Reporting for work! .. Will sum columns \n", omp_get_thread_num());
+
         #pragma omp parallel for
             for (int j=0; j<dim; j++) {
                 ps[0][j] = mat[0][j];
@@ -217,6 +227,8 @@ int main(int argc, char* argv[]) {
 
     // Release resources
     fclose(input_file);
+    delete ps;
+    delete mat;
 
     // Print stats
     printf("%s,arg(%s),%s,%f sec\n", argv[0], argv[1], "CHECK_NOT_PERFORMED", ((double)(alg_end-alg_start))/1000000);

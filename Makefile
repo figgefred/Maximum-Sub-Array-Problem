@@ -9,7 +9,7 @@ EXE_REF = ref
 EXE_COL = col
 EXE_ROW = row 
 EXE = $(EXE_REF) $(EXE_ROW) $(EXE_COL)
-EXE_ARGS = input/test_input_1000.in
+EXE_ARGS = input/test_input_01.in
 
 CFLAGS = -Wall -g -std=c++11 -fopenmp
 LFLAGS = 

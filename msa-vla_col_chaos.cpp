@@ -26,28 +26,35 @@ typedef struct result {
         sum = s;
     }
 
-} ;
+};
 
-long get_usecs (void)
-{
-    struct timeval t;
-    gettimeofday(&t,NULL);
-    return t.tv_sec*1000000+t.tv_usec;
-}
+typedef struct work {
+    int startrow;
+    int startcol;
+    int endrow;
+    int endcol;
 
-void usage(const char* app_name) {
-    printf("Argument error! Usage: %s <input_file> \n", app_name);
-    exit(0);
-}
-
-void clear(int* a, int len) {
-    for (int index=0; index<len; index++) {
-        *(a+index) = 0;
+    work(int srow, int erow, int scol, int ecol)
+    {
+        startrow = srow;
+        endrow = erow;
+        startcol = scol;
+        endcol = ecol;
     }
-}
 
-int** mat;
+};
+
+
+
+long get_usecs (void);
+void usage(const char*);
+void clear(int*, int);
+result* result_new(int, int, int, int, int);
+void result_free(result*);
+
 int** ps;
+int** mat;
+int dim = 0;
 
 int main(int argc, char* argv[]) {
     if(argc != 2) {
@@ -65,7 +72,6 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(numthreads);
     cout << "Running with " << numthreads << " threads.... \n\n";
     // Read the matrix
-    int dim = 0;
     fscanf(input_file, "%u\n", &dim);
     //int mat[dim][dim];
     mat = new int*[dim];
@@ -134,9 +140,46 @@ int main(int argc, char* argv[]) {
 
     result* final_result = new result(0, 0, 0, 0, mat[0][0]);
 
+
+        int workload = (dim*dim);
+        int batch  = workload/numthreads;
+
+        int c = 0; int t = 0;
+        int r = numthreads % workload;
+        work* tasks[numthreads];
+        for(int i = 0; i < dim; i++)
+        {   
+            for(int j = 0; j < dim;j++)
+            {
+                if(++c == 1)
+                {
+                    tasks[t] = new work(0, 0,0 ,0);
+                    tasks[t]->startrow = i;
+                }
+                else if(c == (batch + (r>0?1:0)))
+                {
+                    tasks[t]->endrow = i;
+                    c = 0;
+                    t++;
+                    r--;
+                }   
+                else if(i == dim-1)
+                {
+                    tasks[t]->endrow = i;
+                }
+            }
+        }
+
+        for(int i = 0;i < numthreads; i++)
+        {
+            cout << "start " << tasks[i]->startrow << "," << tasks[i]->startcol << " end " << tasks[i]->endrow << "," << tasks[i]->endcol;
+        }
+
 // Divide work in terms of rows to check and do Kandane over
-#pragma omp parallel 
+#pragma omp parallel
     {
+        int id = omp_get_thread_num();
+
         int max_sum = mat[0][0];
         int top = 0, left = 0, bottom = 0, right = 0; 
 
@@ -144,9 +187,14 @@ int main(int argc, char* argv[]) {
         int sum[dim];
         int pos[dim];
         int local_max;
-        printf("thread-%i: Reporting for work! .. Will do kadane stuff \n", omp_get_thread_num());
-        #pragma omp parallel for schedule(guided)
-        for (int i=0; i<dim; i++) {
+
+        int start = (tasks[id])->startrow;
+        int end = (tasks[id])->endrow;
+
+        printf("thread-%i: Reporting for work! .. Will do kadane stuff \n", id);
+        printf("thread-%i: Will work over column %i to %i \n", id, start, end);
+
+        for (int i=start; i<end; i++) {
             for (int k=i; k<dim; k++) {
                 // Kandane over all columns with the i..k rows
                 clear(sum, dim);
@@ -155,14 +203,14 @@ int main(int argc, char* argv[]) {
 
                 // We keep track of the position of the max value over each Kandane's execution
                 // Notice that we do not keep track of the max value, but only its position
-                sum[0] = ps[0][k] - (i==0 ? 0 : ps[0][i-1]);
+                sum[0] = ps[k][0] - (i==0 ? 0 : ps[i-1][0]);
                 for (int j=1; j<dim; j++) {
                     if (sum[j-1] > 0){
-                        sum[j] = sum[j-1] + ps[j][k] - (i==0 ? 0 : ps[j][i-1]);
+                        sum[j] = sum[j-1] + ps[k][j] - (i==0 ? 0 : ps[i-1][j]);
                         pos[j] = pos[j-1];
                     } 
                     else {
-                        sum[j] = ps[j][k] - (i==0 ? 0 : ps[j][i-1]);
+                        sum[j] = ps[k][j] - (i==0 ? 0 : ps[i-1][j]);
                         pos[j] = j;
                     }
                     if (sum[j] > sum[local_max]){
@@ -185,6 +233,7 @@ int main(int argc, char* argv[]) {
         }
 
 
+        
         if(max_sum > final_result->sum)
          {
             #pragma omp critical
@@ -233,8 +282,43 @@ int main(int argc, char* argv[]) {
     fclose(input_file);
     delete ps;
     delete mat;
+    result_free(final_result);
 
     // Print stats
     printf("%s,arg(%s),%s,%f sec\n", argv[0], argv[1], "CHECK_NOT_PERFORMED", ((double)(alg_end-alg_start))/1000000);
     return 0;
+}
+
+long get_usecs (void)
+{
+    struct timeval t;
+    gettimeofday(&t,NULL);
+    return t.tv_sec*1000000+t.tv_usec;
+}
+
+void usage(const char* app_name) {
+    printf("Argument error! Usage: %s <input_file> \n", app_name);
+    exit(0);
+}
+
+void clear(int* a, int len) {
+    for (int index=0; index<len; index++) {
+        *(a+index) = 0;
+    }
+}
+
+result* result_new(int t, int b, int l, int r, int sum)
+{
+    result* res = new result(t,b,l,r,sum);
+    /*res->top = t;
+    res->bottom = b;
+    res->left = l;
+    res->right = r;
+    res->sum = sum;*/
+    return res;
+}
+
+void result_free(result* r)
+{
+    delete r;
 }

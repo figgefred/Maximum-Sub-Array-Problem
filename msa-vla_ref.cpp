@@ -23,6 +23,9 @@ void clear(int* a, int len) {
     }
 }
 
+int** mat;
+int** ps;
+
 int main(int argc, char* argv[]) {
     if(argc != 2) {
         usage(argv[0]);
@@ -37,9 +40,10 @@ int main(int argc, char* argv[]) {
     // Read the matrix
     int dim = 0;
     fscanf(input_file, "%u\n", &dim);
-    int mat[dim][dim];
+    mat = new int*[dim];
     int element = 0;
     for(int i=0; i<dim; i++) {
+        mat[i] = new int[dim];
         for(int j=0; j<dim; j++) {
             if (j != (dim-1)) 
                 fscanf(input_file, "%d\t", &element);
@@ -64,7 +68,13 @@ int main(int argc, char* argv[]) {
     // http://stackoverflow.com/questions/2643908/getting-the-submatrix-with-maximum-sum
     long alg_start = get_usecs();
     // Compute vertical prefix sum
-    int ps[dim][dim];
+    //int ps[dim][dim];
+    ps = new int*[dim];
+    for(int i = 0; i < dim; i++)
+    {
+        ps[i] = new int[dim];
+    }
+
     for (int j=0; j<dim; j++) {
         ps[0][j] = mat[0][j];
         for (int i=1; i<dim; i++) {
@@ -153,6 +163,8 @@ int main(int argc, char* argv[]) {
 
     // Release resources
     fclose(input_file);
+    delete mat;
+    delete ps;
 
     // Print stats
     printf("%s,arg(%s),%s,%f sec\n", argv[0], argv[1], "CHECK_NOT_PERFORMED", ((double)(alg_end-alg_start))/1000000);
