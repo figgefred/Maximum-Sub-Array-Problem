@@ -3,7 +3,9 @@
 #include <sys/time.h>
 #include <string.h>
 
-//#define _PRINT_INFO 
+using namespace std;
+
+#define _PRINT_INFO 
 
 long get_usecs (void)
 {
