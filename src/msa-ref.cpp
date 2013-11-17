@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <string.h>
+#include <iostream>
 
 using namespace std;
 
-#define _PRINT_INFO 
+//#define _PRINT_INFO 
 
 long get_usecs (void)
 {
@@ -36,6 +37,7 @@ int main(int argc, char* argv[]) {
     // Open files
     FILE* input_file = fopen(argv[1], "r");
     if(input_file == NULL) {
+        cout << "File is null \n";
         usage(argv[0]);
     }
 

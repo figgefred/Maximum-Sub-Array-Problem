@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define _PRINT_INFO 
+//#define _PRINT_INFO 
 
 struct result {
 	int top;
@@ -30,17 +30,16 @@ struct result {
 };
 
 struct task {
-	int startR;
-	int endR;
-	int startC;
-	int endC;
-
-	task(int s1, int s2, int e1, int e2)
+	int* rows;
+	int count;
+	task(int tasksize)
 	{
-		startR = s1;
-		startC = s2;
-		endR = e1;
-		endC = e2;
+		rows = new int[tasksize];
+		count = tasksize;
+	}
+	~task()
+	{
+		delete rows;
 	}
 
 };
@@ -50,7 +49,8 @@ long get_usecs (void);
 void usage(const char*);
 void clear(int*, int);
 Matrix* getPrefixSumMatrix(Matrix* m);
-void doWork(int, task*, result**); // id, task, result_submission_list
+void doWork(int, task*, result* result); // id, task, result_submission_list
+task** getTasks(int);
 
 int numthreads;
 Matrix* mat;
@@ -95,28 +95,31 @@ int main(int argc, char* argv[]) {
 	    printMatrix(ps);
 	#endif
     
+	if(numthreads > mat->getRows())
+	{
+		numthreads = mat->getRows();
+		cout << "\n\n WARNING! More threads set then rows in matrice. Threads set to ROW COUNT: " << mat->getRows() << "\n\n";
+	}
+
 //#Start doing some work
     result** results = new result*[numthreads];
 	int workercount = numthreads-1;
 
 	if(workercount > 0)	// Start workers if workercount > 0
 	{	
-		task* tasks[numthreads];
 		thread threads[numthreads];
 
-		int chunksize = mat->getRows()/numthreads;
-		cout << "chunksize is "<< chunksize << "\n";
+		task** tasks = getTasks(numthreads);
+		
+	// Distribute work
 	    for(int i = 0; i < workercount; i++)
 	    {
-	    	int start = i*chunksize;
-	    	tasks[i] = new task(start, -1, start+chunksize, -1);
-	    	threads[i] = thread(doWork, i, tasks[i], results);
+	    	results[i] = new result(0,0,0,0,0);
+	    	threads[i] = thread(doWork, i, tasks[i], results[i]);
 	    }
 
-	    // Main threads task must be altered
-	    int start = workercount*chunksize;
-	    tasks[workercount] = new task(start, -1, start+chunksize, -1);
-	    doWork(workercount, tasks[workercount], results);
+	    results[workercount] = new result(0,0,0,0,0);
+	    doWork(workercount, tasks[workercount], results[workercount]);
 
 	    for(int i = 0; i < workercount; i++)
 	    {
@@ -127,26 +130,33 @@ int main(int argc, char* argv[]) {
 	else
 	{
 		cout << "no. available rows is "<< mat->getRows() << "\n";
-		task* myTask = new task(0, -1, mat->getRows(), -1); // startRow, startCol, endRow, endCol
-		doWork(workercount, myTask, results);
+		task* myTask = new task(mat->getRows());
+		for(int i = 0; i < mat->getRows(); i++)
+		{
+			myTask->rows[i] = i;
+			//cout << "Handed " << i << " to main and ONLY worker. \n";
+		} // startRow, startCol, endRow, endCol
+		results[workercount] = new result(0,0,0,0,0);
+		doWork(workercount, myTask, results[workercount]);
 		delete myTask;
 	}
 
+	#ifdef _PRINT_INFO
 	cout << "\nResults in pipeline \n";
 	for(int i = 0; i < numthreads; i++)
 	{
-		cout << "(top, down, left, right) = " << " (" << results[i]->top << ", " << results[i]->bottom << ", " << results[i]->left << ", " << results[i]->right << ") \n";
+		cout << "(top, down, left, right) sum = " << " (" << results[i]->top << ", " << results[i]->bottom << ", " << results[i]->left << ", " << results[i]->right << ") " << results[i]->sum << "\n";
 	}
 	cout << "\n";
+	#endif
 //#Find result
-	result* final_result = results[workercount];
-	cout << "Current winning result: (top, down, left, right) = " << " (" << final_result->top << ", " << final_result->bottom << ", " << final_result->left << ", " << final_result->right << ") \n";
-	for(int i = 1; i < workercount; i++)
+	result* final_result = results[0];
+	for(int i = 1; i < numthreads; i++)
 	{
 		if(final_result->sum < results[i]->sum)
 		{
 			final_result = results[i];
-			cout << "Current winning result: (top, down, left, right) = " << " (" << final_result->top << ", " << final_result->bottom << ", " << final_result->left << ", " << final_result->right << ") \n";
+			//cout << "Current winning result: (top, down, left, right) = " << " (" << final_result->top << ", " << final_result->bottom << ", " << final_result->left << ", " << final_result->right << ") \n";
 		}
 	}
 
@@ -192,13 +202,53 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// Task that finds largest region restricted to the a certain Task (submatrix)
-void doWork(int id, task* t, result** result_submission)
+task** getTasks(int n)
 {
-	int start = t->startR;
+	task** tasks = new task*[n];
+		
 
-    int max_sum = mat->get(0,0);
-    int top = 0, left = 0, bottom = 0, right = 0; 
+	// Init tasks
+	int rBegin = 0;
+	int rEnd = mat->getRows();
+	int rowsPerThread = rEnd/n;
+	int w = n-1;
+	for(int i = 0; i < w; i++)
+	{
+		tasks[i] = new task(rowsPerThread);	
+		for(int j = 0; j < rowsPerThread; j++)
+		{
+			if(j % 2 == 0)
+			{
+				tasks[i]->rows[j] = rBegin++;	
+			}
+			else
+			{
+				tasks[i]->rows[j] = rEnd--;		
+			}
+		}
+	}
+	{
+		int r = rowsPerThread + (rEnd%n);
+		tasks[w] = new task(r);	// rowcount + rest
+	}
+	for(int i = 0; i < tasks[w]->count; i++)
+	{
+		tasks[w]->rows[i] = rEnd--;
+	}
+	return tasks;
+}
+
+// Task that finds largest region restricted to the a certain Task (submatrix)
+void doWork(int id, task* t, result* res)
+{
+ //   int max_sum = mat->get(0,0);
+ //   int top = 0, left = 0, bottom = 0, right = 0; 
+
+	res->top = 0;
+	res->bottom = 0;
+	res->right = 0;
+	res->left = 0;
+	res->sum = mat->get(0,0);
 
     int dimR = mat->getRows();
     int dimC = mat->getCols();
@@ -208,9 +258,11 @@ void doWork(int id, task* t, result** result_submission)
     int pos[dimR];
     int local_max;
 
-    result* res = new result(0,0,0,0,0);
-    printf("Thread-%i: Searching from rows: %i \n", id, start);
-    for (int i=start; i < dimR; i++) {
+
+    int i = 0;
+    for (int tIndex = 0; tIndex < t->count; tIndex++) {
+    	i = t->rows[tIndex];
+    	//printf("Thread-%i: Searching from row: %i \n", id, i);
         for (int k=i; k < dimR; k++) {
             // Kandane over all columns with the i..k rows
             clear(sum, dimR);
@@ -244,13 +296,11 @@ void doWork(int id, task* t, result** result_submission)
                 res->left = pos[local_max];
                 res->bottom = k;
                 res->right = local_max;
-                printf("Thread-%i: Found new values: top-%i, down-%i, left-%i, right-%i, sum-%i\n", id, i, k, pos[local_max], local_max, sum[local_max]);
-                printf("Thread-%i: Found new values: top-%i, down-%i, left-%i, right-%i, sum-%i\n", id, res->top, res->bottom, res->left, res->right, res->sum);
+                //printf("Thread-%i: Found new values: top-%i, down-%i, left-%i, right-%i, sum-%i\n", id, i, k, pos[local_max], local_max, sum[local_max]);
             }
         }
     }
     printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
-    result_submission[id] = res;
 }
 
 // Algorithm based on information obtained here:
