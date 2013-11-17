@@ -48,9 +48,11 @@ void printMatrix(Matrix*);
 long get_usecs (void);
 void usage(const char*);
 void clear(int*, int);
-Matrix* getPrefixSumMatrix(Matrix* m);
+void setPrefixSumMatrix();
+void sumColumn(int, int, int);
+void sumAllColumns();
 void doWork(int, task*, result* result); // id, task, result_submission_list
-task** getTasks(int);
+task** getTasks();
 
 int numthreads;
 Matrix* mat;
@@ -85,21 +87,28 @@ int main(int argc, char* argv[]) {
 		usage(argv[0]);
 	}
 
-//#Start timer
-    long alg_start = get_usecs();
-//#Compute vertical prefix sum
-    ps = getPrefixSumMatrix(mat);
-
-	#ifdef _PRINT_INFO
-	    cout << "Vertical PrefixMatrix \n";
-	    printMatrix(ps);
-	#endif
-    
 	if(numthreads > mat->getRows())
 	{
 		numthreads = mat->getRows();
 		cout << "\n\n WARNING! More threads set then rows in matrice. Threads set to ROW COUNT: " << mat->getRows() << "\n\n";
 	}
+	else
+	{
+		cout << "\n\n Numthreads is set to: " << numthreads << "\n\n";	
+	}
+
+
+//#Start timer
+    long alg_start = get_usecs();
+//#Compute vertical prefix sum
+    ps = new Matrix(mat->getRows(), mat->getCols());
+    //int c = numthreads;
+    setPrefixSumMatrix();
+	#ifdef _PRINT_INFO
+	    cout << "Vertical PrefixMatrix \n";
+	    printMatrix(ps);
+	#endif
+	//numthreads = c;
 
 //#Start doing some work
     result** results = new result*[numthreads];
@@ -109,7 +118,7 @@ int main(int argc, char* argv[]) {
 	{	
 		thread threads[numthreads];
 
-		task** tasks = getTasks(numthreads);
+		task** tasks = getTasks();
 		
 	// Distribute work
 	    for(int i = 0; i < workercount; i++)
@@ -202,16 +211,16 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-task** getTasks(int n)
+task** getTasks()
 {
-	task** tasks = new task*[n];
+	task** tasks = new task*[numthreads];
 		
 
 	// Init tasks
 	int rBegin = 0;
 	int rEnd = mat->getRows();
-	int rowsPerThread = rEnd/n;
-	int w = n-1;
+	int rowsPerThread = rEnd/numthreads;
+	int w = numthreads-1;
 	for(int i = 0; i < w; i++)
 	{
 		tasks[i] = new task(rowsPerThread);	
@@ -228,7 +237,7 @@ task** getTasks(int n)
 		}
 	}
 	{
-		int r = rowsPerThread + (rEnd%n);
+		int r = rowsPerThread + (rEnd%numthreads);
 		tasks[w] = new task(r);	// rowcount + rest
 	}
 	for(int i = 0; i < tasks[w]->count; i++)
@@ -303,19 +312,49 @@ void doWork(int id, task* t, result* res)
     printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
 }
 
+void sumColumn(int id, int start, int end)
+{
+	for(int j = start; j < end; j++)
+	{
+		ps->set(0, j, mat->get(0, j));
+		for(int i = 1; i < mat->getRows(); i++)
+		{
+			int val = ps->get(i-1,j) + mat->get(i,j);
+			ps->set(i,j, val);
+		}
+	}
+}
+
+void sumAllColumns()
+{
+    sumColumn(0, 0, mat->getRows());
+}
+
 // Algorithm based on information obtained here:
 // http://stackoverflow.com/questions/2643908/getting-the-submatrix-with-maximum-sum
-Matrix* getPrefixSumMatrix(Matrix* m)
+void setPrefixSumMatrix()
 {
-    Matrix* p = new Matrix(m->getRows(), m->getCols());
-
-    for (int j=0; j<p->getCols(); j++) {
-        p->set(0,j, m->get(0,j));
-        for (int i=1; i<p->getRows(); i++) {
-            p->set(i,j, (p->get(i-1,j) + m->get(i,j)));
-        }
+    if(true)
+    {	
+    	sumAllColumns();
+    	return;
     }
-    return p;
+    int cols = mat->getCols();
+    int chunks = cols/numthreads;
+    
+    int w = numthreads-1;
+    thread threads[w];
+    for(int i = 0; i < w; i++)
+    {
+    	int start = i*chunks;
+    	threads[i] = thread(sumColumn, i, start, start+chunks);
+    }
+    sumColumn(w, w*chunks, cols);
+    for(int i = 0; i < w; i++)
+    {
+    	threads[i].join();
+    }
+    return;
 }
 
 void printMatrix(Matrix* matrix)

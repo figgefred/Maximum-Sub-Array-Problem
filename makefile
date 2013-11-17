@@ -3,7 +3,7 @@
 # Makefile make me fast and accurate
 
 CC = g++
-FLAGS = -Wall -g --std=c++11 -fopenmp
+FLAGS = -Wall -g --std=c++11 -fopenmp -O
 
 SRC_DIR = src/
 BIN = bin/
@@ -20,6 +20,12 @@ SOURCES_THREAD = $(SRC_THREAD:%.cpp=$(SRC_DIR)%.cpp)
 OBJ_THREAD = $(SOURCES_THREAD:$(SRC_DIR)%.cpp=$(BIN)%.o)
 EXE_THREAD = thread
 
+#OPENMP
+SRC_OPENMP = msa-openmp.cpp 
+SOURCES_OPENMP = $(SRC_OPENMP:%.cpp=$(SRC_DIR)%.cpp)
+OBJ_OPENMP = $(SOURCES_OPENMP:$(SRC_DIR)%.cpp=$(BIN)%.o)
+EXE_OPENMP = openmp
+
 #MISC
 SRC_MISC = matrix.cpp
 SOURCES_MISC = $(SRC_MISC:%.cpp=$(SRC_DIR)%.cpp)
@@ -28,7 +34,7 @@ MISC = misc
 
 # All objects... Everything added above should be appended here.
 # OBJ = $(OBJ_REF) $(OBJ_THREAD)
-EXE = $(EXE_REF) $(EXE_THREAD)
+EXE = $(EXE_REF) $(EXE_THREAD) $(EXE_OPENMP)
 EXE_ARGS = input/test_input_1000.in
 CCFLAGS = -I$(SRC_DIR)
 
@@ -47,8 +53,7 @@ cleanall:
 	rm -rf bin/
 
 clean: 
-	rm -f $(EXE)
-	rm -f $(OBJ)
+	rm -f bin/*
 
 
 
@@ -61,7 +66,8 @@ $(EXE_REF): $(OBJ_REF) | $(BIN)
 $(EXE_THREAD): $(OBJ_THREAD) $(OBJ_MISC) | $(BIN)
 	$(CC) $(OBJ_THREAD) $(OBJ_MISC) $(CCFLAGS) $(FLAGS) -o $(BIN)$(EXE_THREAD)
 
-
+$(EXE_OPENMP): $(OBJ_OPENMP) $(OBJ_MISC) | $(BIN)
+	$(CC) $(OBJ_OPENMP) $(OBJ_MISC) $(CCFLAGS) $(FLAGS) -o $(BIN)$(EXE_OPENMP)
 
 
 #OBJECTS
@@ -71,7 +77,8 @@ $(OBJ_REF): $(SOURCES_REF) | $(BIN)
 $(OBJ_THREAD): $(SOURCES_THREAD) | $(BIN)
 	$(CC) -c $(SOURCES_THREAD) $(CCFLAGS) $(FLAGS) -o $(OBJ_THREAD)
 
-
+$(OBJ_OPENMP): $(SOURCES_OPENMP) | $(BIN)
+	$(CC) -c $(SOURCES_OPENMP) $(CCFLAGS) $(FLAGS) -o $(OBJ_OPENMP)
 
 
 #MISC
