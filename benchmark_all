@@ -44,9 +44,9 @@ do
 	echo "Running benchmark for command ${cmd[$c]}"
 	echo ""
 	echo "Running single threaded variant..."
-	eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} 1s
+	eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} 1
 
-	for (( i = 2; i <= $1 ; i*=$2 ))
+	for (( i = $2; i <= $1 ; i+=$2 ))
 	do
 		echo ""
 		echo "Running for threadcount == ${i}..."
