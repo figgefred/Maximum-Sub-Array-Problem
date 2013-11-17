@@ -2,8 +2,8 @@
 
 if  [[ $# < 2 ]] 
 then
-    echo "Usage: benchmark_all <max_thread> <increment>"
-    echo "Usage: benchmark_all <max_thread> <increment> <optional_file_input>"
+    echo "Usage: benchmark_all <max_thread> <multiple_increment>"
+    echo "Usage: benchmark_all <max_thread> <multiple_increment> <optional_file_input>"
     echo ""
     exit 0
 fi
@@ -46,7 +46,7 @@ do
 	echo "Running single threaded variant..."
 	eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} 1s
 
-	for (( i = 2; i <= $1 ; i+=$2 ))
+	for (( i = 2; i <= $1 ; i*=$2 ))
 	do
 		echo ""
 		echo "Running for threadcount == ${i}..."
