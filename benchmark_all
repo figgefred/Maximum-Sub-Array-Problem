@@ -1,0 +1,55 @@
+#!/bin/bash
+
+if  [[ $# < 2 ]] 
+then
+    echo "Usage: benchmark_all <max_thread> <increment>"
+    echo "Usage: benchmark_all <max_thread> <increment> <optional_file_input>"
+    echo ""
+    exit 0
+fi
+
+repeat=4
+
+echo "Rebuilding projects..."
+echo ""
+make clean
+make
+echo ""
+echo "Build complete."
+echo ""
+
+benchmark="./benchmark"
+input_file="input/test_input_1000.in"
+if  [[ $# > 2 ]] 
+then
+	input_file=$3
+fi
+
+ref="bin/ref"
+echo "=================================================================="
+echo ""
+echo "Running reference command ${ref}"
+echo ""
+eval ${benchmark} ${ref} ${input_file} ${repeat} 1
+
+cmd[0]="bin/thread"
+cmd[1]="bin/openmp"
+
+echo 
+
+for((c = 0; c < ${#cmd[@]}; c++))
+do
+	echo "=================================================================="
+	echo ""
+	echo "Running benchmark for command ${cmd[$c]}"
+	for (( i = 1; i <= $1 ; i+=$2 ))
+	do
+		echo ""
+		echo "Running for threadcount == ${i}"
+		eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} ${i}
+	done;
+done;
+
+echo ""
+echo "Done with benchmark for all"
+

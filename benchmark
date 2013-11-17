@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# 2013-11-17: Frederick Ceder
+#
+ 
+if  [[ $# < 4 ]] 
+then
+    echo "Usage: benchmark <command> <input-file> <repeats> <thread_count>"
+    echo "Usage: benchmark <command> <input-file> <repeats> <thread_count> <anything_to_remove_old_outdata>"
+    echo ""
+    exit 0
+fi
+
+command=$1
+inputfile=$2
+repeats=$3
+numthreads=$4
+output_file='benchmark_results_'${command##*/}'.csv'
+
+output_dir="output/"
+output_file=$output_dir$output_file
+TIMEFORMAT='%3R'
+
+mkdir -p $output_dir
+if  [[ $# > 4 ]] 
+then
+    # in this case we remove the old *.csv
+    rm ${output_dir}*.csv
+fi
+echo "Outputting to file: "$output_file
+echo ""
+
+command_to_run="${command} ${inputfile} ${numthreads}"
+# --------------------------------------------------------------------------
+# Benchmark loop
+# --------------------------------------------------------------------------
+echo 'Benchmarking ' $command_to_run '...';
+# Indicate the command we just run in the csv file
+echo '======' $command_to_run '======' >> $output_file;
+
+# Run the given command [repeats] times
+for (( i = 1; i <= $repeats ; i++ ))
+do
+    # percentage completion
+    p=$(( $i * 100 / $repeats))
+    # indicator of progress
+    l=$(seq -s "+" $i | sed 's/[0-9]//g')
+
+    (time $command_to_run) > /dev/null 2>> $output_file
+
+    echo -ne ${l}' ('${p}'%) \r'
+done;
+
+echo -ne '\n'
+
+# Convenience seperator for file
+echo '--------------------------' >> $output_file
