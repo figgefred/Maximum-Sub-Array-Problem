@@ -222,15 +222,18 @@ task** getTasks()
 	for(int i = 0; i < numthreads; i++)
 	{
 		tasks[i] = new task(rowsPerThread);	
+		bool tmp = true;
 		for(int j = 0; j < rowsPerThread; j++)
 		{
-			if(j % 2 == 0)
+			if(tmp)
 			{
 				tasks[i]->rows[j] = rBegin++;	
+				tmp = false;
 			}
 			else
 			{
 				tasks[i]->rows[j] = rEnd--;		
+				tmp = true;
 			}
 		}
 	}
