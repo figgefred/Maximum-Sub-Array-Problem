@@ -33,9 +33,9 @@ echo ""
 
 benchmark="./benchmark"
 input_file="input/test_input_1000.in"
-if  [[ $# > 2 ]] 
+if  [[ $# > 3 ]] 
 then
-	input_file=$3
+	input_file=$4
 fi
 
 ref="bin/ref"
