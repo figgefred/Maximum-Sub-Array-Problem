@@ -6,6 +6,7 @@
 #include <omp.h>
 #include <iostream>
 #include "matrix.h"
+#include <vector>
 
 using namespace std;
 
@@ -30,16 +31,14 @@ struct result {
 };
 
 struct task {
-	int* rows;
-	int count;
+	vector<int> rows;
 	task(int tasksize)
 	{
-		rows = new int[tasksize];
-		count = tasksize;
+		rows = vector<int>(tasksize, tasksize + 5);
 	}
 	~task()
 	{
-		delete rows;
+		//delete rows;
 	}
 
 };
@@ -220,8 +219,7 @@ task** getTasks()
 	int rBegin = 0;
 	int rEnd = mat->getRows();
 	int rowsPerThread = rEnd/numthreads;
-	int w = numthreads-1;
-	for(int i = 0; i < w; i++)
+	for(int i = 0; i < numthreads; i++)
 	{
 		tasks[i] = new task(rowsPerThread);	
 		for(int j = 0; j < rowsPerThread; j++)
@@ -236,14 +234,40 @@ task** getTasks()
 			}
 		}
 	}
+	
+	for(int i = 0; i < numthreads; i++)
 	{
-		int r = rowsPerThread + (rEnd%numthreads);
-		tasks[w] = new task(r);	// rowcount + rest
+		cout << "Thread-" << i << ": Retrieved work patch: " << tasks[i]->rows.size() << "tasks(";
+		for(int j = 0; j < tasks[i]->rows.size(); j++)
+		{
+			cout << tasks[i]->rows[j] << " ";
+		}
+		cout << "\n";
 	}
-	for(int i = 0; i < tasks[w]->count; i++)
+	cout << "\n\n";
+
+	// Excess work
+	int r = (rEnd%numthreads);
+	for( int i = 0; r > 0; i++ )
 	{
-		tasks[w]->rows[i] = rEnd--;
+		if(i == numthreads)
+			i = 0;
+		tasks[i]->rows.push_back(rBegin++);	
+		r--;
 	}
+
+	for(int i = 0; i < numthreads; i++)
+	{
+		cout << "Thread-" << i << ": Retrieved work patch: " << tasks[i]->rows.size() << "tasks(";
+		for(int j = 0; j < tasks[i]->rows.size(); j++)
+		{
+			cout << tasks[i]->rows[j] << " ";
+		}
+		cout << "\n";
+	}
+	cout << "\n\n";
+
+
 	return tasks;
 }
 
@@ -269,7 +293,7 @@ void doWork(int id, task* t, result* res)
 
 
     int i = 0;
-    for (int tIndex = 0; tIndex < t->count; tIndex++) {
+    for (int tIndex = 0; tIndex < t->rows.size(); tIndex++) {
     	i = t->rows[tIndex];
     	//printf("Thread-%i: Searching from row: %i \n", id, i);
         for (int k=i; k < dimR; k++) {
