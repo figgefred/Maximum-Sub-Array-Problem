@@ -237,17 +237,6 @@ task** getTasks()
 			}
 		}
 	}
-	
-	for(int i = 0; i < numthreads; i++)
-	{
-		cout << "Thread-" << i << ": Retrieved work patch: " << tasks[i]->rows.size() << "tasks(";
-		for(int j = 0; j < tasks[i]->rows.size(); j++)
-		{
-			cout << tasks[i]->rows[j] << " ";
-		}
-		cout << "\n";
-	}
-	cout << "\n\n";
 
 	// Excess work
 	int r = (rEnd%numthreads);
@@ -258,18 +247,6 @@ task** getTasks()
 		tasks[i]->rows.push_back(rBegin++);	
 		r--;
 	}
-
-	for(int i = 0; i < numthreads; i++)
-	{
-		cout << "Thread-" << i << ": Retrieved work patch: " << tasks[i]->rows.size() << "tasks(";
-		for(int j = 0; j < tasks[i]->rows.size(); j++)
-		{
-			cout << tasks[i]->rows[j] << " ";
-		}
-		cout << "\n";
-	}
-	cout << "\n\n";
-
 
 	return tasks;
 }
@@ -336,7 +313,7 @@ void doWork(int id, task* t, result* res)
             }
         }
     }
-    printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
+    //printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
 }
 
 void sumColumn(int id, int start, int end)

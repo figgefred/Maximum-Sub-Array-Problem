@@ -256,7 +256,7 @@ void doWork(int id, result* final_res)
 	            }
 	        }
 	    }
-	    printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
+	    //printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
     // Lets evaluate the total largest area
 	    if(final_res->sum < res->sum)
 	    {
@@ -273,7 +273,7 @@ void doWork(int id, result* final_res)
 		    }	
 	    }
 	}
-	printf("MainThread: Final result found is: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, final_res->top, final_res->bottom, final_res->left, final_res->right, final_res->sum);
+	//printf("MainThread: Final result found is: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, final_res->top, final_res->bottom, final_res->left, final_res->right, final_res->sum);
 }
 
 void sumColumn(int id, int col)
