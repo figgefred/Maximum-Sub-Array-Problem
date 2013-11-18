@@ -5,6 +5,7 @@ class Matrix
 {
 
 	private:
+		//int* matrix;
 		int** matrix;
 		int rows;
 		int cols;

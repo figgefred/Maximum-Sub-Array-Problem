@@ -49,9 +49,9 @@ do
     (time $command_to_run) > /dev/null 2>> $output_file
 
     echo -ne ${l}' ('${p}'%) \r'
-done;
+done
 
 echo -ne '\n'
 
 # Convenience seperator for file
-echo '--------------------------' >> $output_file
+echo '-----------------------------------------' >> $output_file

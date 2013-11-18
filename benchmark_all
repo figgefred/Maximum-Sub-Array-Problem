@@ -48,8 +48,6 @@ eval ${benchmark} ${ref} ${input_file} ${repeat} 1
 cmd[0]="bin/thread"
 cmd[1]="bin/openmp"
 
-echo 
-
 for((c = 0; c < ${#cmd[@]}; c++))
 do
 	echo "=================================================================="
@@ -73,8 +71,8 @@ do
 		echo ""
 		echo "Running for threadcount == ${i}..."
 		eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} ${i}
-	done;
-done;
+	done
+done
 
 echo ""
 echo "Done with benchmark for all"
