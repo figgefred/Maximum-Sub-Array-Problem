@@ -46,7 +46,20 @@ do
 	echo "Running single threaded variant..."
 	eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} 1
 
-	for (( i = $2; i <= $1 ; i+=$2 ))
+	if  [[ $1 > 1 ]] 
+	then
+		echo ""
+		echo "Running for threadcount == 2..."
+		eval ${benchmark} ${cmd[$c]} ${input_file} ${repeat} 2
+	fi
+
+	start=$2
+	if  [[ $2 < 3 ]] 
+	then
+		start=3
+	fi
+
+	for (( i = $start; i <= $1 ; i+=$2 ))
 	do
 		echo ""
 		echo "Running for threadcount == ${i}..."
