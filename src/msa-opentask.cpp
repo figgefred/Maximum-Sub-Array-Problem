@@ -210,13 +210,14 @@ void doWork(int id, result* final_res)
     	int local_max;
 		result* res = new result(0,0,0,0,0);
 
-	#pragma omp for schedule(static) nowait
+	#pragma omp for
+	
 	    for (int i = 0; i < dimR; i++) {
 	    	//printf("Thread-%i: Searching from row: %i \n", id, i);
-	        
-	    	#pragma omp task 
+        	#pragma omp task
 	    	{
 		        for (int k=i; k < dimR; k++) {
+		    
 		            // Kandane over all columns with the i..k rows
 		            clear(sum, dimR);
 		            clear(pos, dimR);
@@ -253,7 +254,8 @@ void doWork(int id, result* final_res)
 		            }
 		        }
 		    }
-	    }
+	    
+	}
 	    //printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
     // Lets evaluate the total largest area
 	    
