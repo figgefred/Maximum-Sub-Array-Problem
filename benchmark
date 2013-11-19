@@ -30,7 +30,7 @@ fi
 echo "Outputting to file: "$output_file
 echo ""
 
-command_to_run="${command} ${inputfile} ${numthreads}"
+command_to_run="${command} ${numthreads} ${inputfile}"
 # --------------------------------------------------------------------------
 # Benchmark loop
 # --------------------------------------------------------------------------

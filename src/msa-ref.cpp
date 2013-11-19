@@ -16,7 +16,7 @@ long get_usecs (void)
 }
 
 void usage(const char* app_name) {
-    printf("Argument error! Usage: %s <input_file> \n", app_name);
+    printf("Argument error! Usage: %s <dummy> <input_file> \n", app_name);
     exit(0);
 }
 
@@ -30,12 +30,12 @@ int** mat;
 int** ps;
 
 int main(int argc, char* argv[]) {
-    if(argc < 2) {
+    if(argc < 3) {
         usage(argv[0]);
     }
 
     // Open files
-    FILE* input_file = fopen(argv[1], "r");
+    FILE* input_file = fopen(argv[2], "r");
     if(input_file == NULL) {
         cout << "File is null \n";
         usage(argv[0]);
@@ -171,6 +171,6 @@ int main(int argc, char* argv[]) {
     delete ps;
 
     // Print stats
-    printf("%s,arg(%s),%s,%f sec\n", argv[0], argv[1], "CHECK_NOT_PERFORMED", ((double)(alg_end-alg_start))/1000000);
+    printf("%s,arg(%s),%s,%f sec\n", argv[0], argv[2], "CHECK_NOT_PERFORMED", ((double)(alg_end-alg_start))/1000000);
     return 0;
 }
