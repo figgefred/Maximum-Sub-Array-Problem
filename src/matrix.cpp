@@ -1,4 +1,4 @@
-/*
+
 #include "matrix.h"
 #include <string>
 #include <iostream>
@@ -87,7 +87,13 @@ void Matrix::set(int r, int c, int val)
 {
 	matrix[r][c] = val;
 }
-*/
+
+void Matrix::setRow(int r, int* row)
+{
+	delete matrix[r];
+	matrix[r] = row;
+}
+
 /*
 
 
@@ -176,7 +182,7 @@ void Matrix::set(int r, int c, int val)
 */
 
 
-
+/*
 
 
 #include "matrix.h"
@@ -274,3 +280,4 @@ void Matrix::set(int r, int c, int val)
 	matrix[c][r] = val;
 }
 
+*/

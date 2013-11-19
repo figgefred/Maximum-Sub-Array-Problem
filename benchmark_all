@@ -47,6 +47,7 @@ eval ${benchmark} ${ref} ${input_file} ${repeat} 1
 
 cmd[0]="bin/thread"
 cmd[1]="bin/openmp"
+cmd[2]="bin/opentask"
 
 for((c = 0; c < ${#cmd[@]}; c++))
 do

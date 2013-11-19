@@ -210,48 +210,55 @@ void doWork(int id, result* final_res)
     	int local_max;
 		result* res = new result(0,0,0,0,0);
 
-	#pragma omp for schedule(dynamic, 10)
+	#pragma omp for schedule(static) nowait
 	    for (int i = 0; i < dimR; i++) {
 	    	//printf("Thread-%i: Searching from row: %i \n", id, i);
-	        for (int k=i; k < dimR; k++) {
-	            // Kandane over all columns with the i..k rows
-	            clear(sum, dimR);
-	            clear(pos, dimR);
-	            local_max = 0;
+	        
+	    	#pragma omp task 
+	    	{
+		        for (int k=i; k < dimR; k++) {
+		            // Kandane over all columns with the i..k rows
+		            clear(sum, dimR);
+		            clear(pos, dimR);
+		            local_max = 0;
 
-	            // We keep track of the position of the max value over each Kandane's execution
-	            // Notice that we do not keep track of the max value, but only its position
-	            sum[0] = ps->get(k,0) - (i==0 ? 0 : ps->get(i-1,0));
-	            for (int j=1; j<dimC; j++) {
-	                if (sum[j-1] > 0){
-	                    sum[j] = sum[j-1] + ps->get(k,j) - (i==0 ? 0 : ps->get(i-1, j));
-	                    pos[j] = pos[j-1];
-	                } 
-	                else {
-	                    sum[j] = ps->get(k,j) - (i==0 ? 0 : ps->get(i-1, j));
-	                    pos[j] = j;
-	                }
-	                if (sum[j] > sum[local_max]){
-	                    local_max = j;
-	                }
-	            } //Kandane ends here
+		            // We keep track of the position of the max value over each Kandane's execution
+		            // Notice that we do not keep track of the max value, but only its position
+		            sum[0] = ps->get(k,0) - (i==0 ? 0 : ps->get(i-1,0));
+		            for (int j=1; j<dimC; j++) {
+		                if (sum[j-1] > 0){
+		                    sum[j] = sum[j-1] + ps->get(k,j) - (i==0 ? 0 : ps->get(i-1, j));
+		                    pos[j] = pos[j-1];
+		                } 
+		                else {
+		                    sum[j] = ps->get(k,j) - (i==0 ? 0 : ps->get(i-1, j));
+		                    pos[j] = j;
+		                }
+		                if (sum[j] > sum[local_max]){
+		                    local_max = j;
+		                }
+		            } //Kandane ends here
 
-	            if (sum[local_max] > res->sum) {
-	                // sum[local_max] is the new max value
-	                // the corresponding submatrix goes from rows i..k.
-	                // and from columns pos[local_max]..local_max
+		            if (sum[local_max] > res->sum) {
+		                // sum[local_max] is the new max value
+		                // the corresponding submatrix goes from rows i..k.
+		                // and from columns pos[local_max]..local_max
 
-	                res->sum = sum[local_max];
-	                res->top = i;
-	                res->left = pos[local_max];
-	                res->bottom = k;
-	                res->right = local_max;
-	                //printf("Thread-%i: Found new values: top-%i, down-%i, left-%i, right-%i, sum-%i\n", id, i, k, pos[local_max], local_max, sum[local_max]);
-	            }
-	        }
+		                res->sum = sum[local_max];
+		                res->top = i;
+		                res->left = pos[local_max];
+		                res->bottom = k;
+		                res->right = local_max;
+		                //printf("Thread-%i: Found new values: top-%i, down-%i, left-%i, right-%i, sum-%i\n", id, i, k, pos[local_max], local_max, sum[local_max]);
+		            }
+		        }
+		    }
 	    }
 	    //printf("Thread-%i: Results found are: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, res->top, res->bottom, res->left, res->right, res->sum);
     // Lets evaluate the total largest area
+	    
+	    #pragma omp taskwait 
+	    {
 	    if(final_res->sum < res->sum)
 	    {
 	    	#pragma omp critical
@@ -267,6 +274,7 @@ void doWork(int id, result* final_res)
 		    }	
 	    }
 	    delete res;
+		}
 	}
 	//printf("MainThread: Final result found is: top->%i, down->%i, left->%i, right->%i, sum->%i \n", id, final_res->top, final_res->bottom, final_res->left, final_res->right, final_res->sum);
 }

@@ -24,6 +24,7 @@ class Matrix
 		int getCols();
 		int get(int, int);
 		void set(int, int, int);
+		void setRow(int, int*);
 
 };
 #define _MATRIX
