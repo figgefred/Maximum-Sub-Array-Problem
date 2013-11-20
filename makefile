@@ -42,7 +42,7 @@ MISC = misc
 # All objects... Everything added above should be appended here.
 # OBJ = $(OBJ_REF) $(OBJ_THREAD)
 EXE = $(EXE_REF) $(EXE_THREAD) $(EXE_OPENMP) $(EXE_OPENTASK)
-EXE_ARGS = input/test_input_1000.in
+EXE_ARGS = input/test_input_1500.in
 CCFLAGS = -I$(SRC_DIR)
 
 all: $(EXE)
@@ -104,13 +104,3 @@ $(OBJ_MISC): $(SOURCES_MISC) | $(BIN)
 #Make BIN?
 $(BIN): 
 	mkdir -p $(BIN)
-
-
-
-
-#Some run sample
-run_$(EXE_REF):
-	$(BIN)$(EXE_REF) $(EXE_ARGS)
-
-run_$(EXE_THREAD):
-	$(BIN)$(EXE_THREAD) $(EXE_ARGS)
