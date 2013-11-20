@@ -32,7 +32,7 @@ echo "Build complete."
 echo ""
 
 benchmark="./benchmark"
-input_file="input/test_input_1000.in"
+input_file="input/test_input_1500.in"
 if  [[ $# > 3 ]] 
 then
 	input_file=$4
