@@ -41,7 +41,7 @@ MISC = misc
 
 # All objects... Everything added above should be appended here.
 # OBJ = $(OBJ_REF) $(OBJ_THREAD)
-EXE = $(EXE_REF) $(EXE_THREAD) $(EXE_OPENMP)
+EXE = $(EXE_REF) $(EXE_THREAD) $(EXE_OPENMP) $(EXE_OPENTASK)
 EXE_ARGS = input/test_input_1000.in
 CCFLAGS = -I$(SRC_DIR)
 
