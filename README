@@ -2,17 +2,50 @@ Application notes:
 
 * Purpose: To find the sub-matrix with maximum sum given a square matrix
 * Algorithm: Based on the O(n^3) Kandane's algorithm described here: http://www.algorithmist.com/index.php/UVa_108
-* Implementation is sequential and is based on comments from here: http://stackoverflow.com/questions/2643908/getting-the-submatrix-with-maximum-sum
+* Reference program is sequential and is based on comments from here: http://stackoverflow.com/questions/2643908/getting-the-submatrix-with-maximum-sum
+* Implementations are the reference program parallelized using thread in c++ or openmp.
 
 Software:
 
-- Source code is in max-sub-array-vla.c
-- Three input files are provided: test_input_0[0-2].in
-- A Makefile is provided for compilation and testing
+There are four implementations:
+
+ - REF: 	Reference program
+ - THREAD: 	Implementation using explicit threading
+ - OPENMP: 	Implementation using openmp and for pragma
+ - OPENTASK: Implementation using openmp and a task based model
+
+
+- Source code is folder src/
+- All implementations use the matrix.cpp as a matrix representation (see matrix.h)
+- Input files are provided in input/ folder
+- A Makefile is provided for compilation
 
 How to run:
 
-- Type 'make' to compile 
-- Type 'make run_test' to test
-- Change the Makefile to test with different inputs
+- Type 'make' to compile
+- Locate executables in "bin/"
+- run in terminal: bin/<EXE> <threadnum> <files>
+	- <EXE> is executable of choice
+	- <threadnum> is number of threads
+	- <files> are a list of input files seperated by white space
+
+Scripts:
+
+ There are two scripts:
+  - benchmark: Runs a benchmark test for a specified program. Output data to file in output/ folder.
+  - benchmark_all: Benchmarks all implementations and the reference program using the benchmark script.
+
+
+SAMPLE COMMANDS:
+
+bin/thread 4 input/test_input_1000.in input/test_input_250.in
+
+
+USAGE:
+
+bin/ref <dummy> <list_of_files>
+bin/thread <numthreads> <list_of_files>
+bin/openmp <numthreads> <list_of_files>
+bin/opentask <numthreads> <list_of_files>
+
 

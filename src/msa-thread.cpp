@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	for(int c = 2; c < argc; c++)
 	{
 
-		cout << "\n\n" << "Solving for " << argv[c] << ": \n\n";
+		cout << "\n" << "Solving for " << argv[c] << ": \n";
 		all_results[resIndex] = new result(0,0,0,0,0);
 		solve(argv[c], all_results[resIndex]);
     	resIndex++;
@@ -126,12 +126,12 @@ void solve(string file, result* res)
 		if(numthreads > mat->getRows())
 		{
 			omp_set_num_threads(mat->getRows());
-			cout << "\n WARNING! More threads set then rows in matrice of "<< file << ". Threads set to ROW COUNT: " << mat->getRows() << "\n\n";
+			cout << " WARNING! More threads set then rows in matrice of "<< file << ". Threads set to ROW COUNT: " << mat->getRows() << "\n\n";
 		}
 		else
 		{
 			omp_set_num_threads(numthreads);
-			cout << "\n Numthreads is set to: " << numthreads << "\n\n";	
+			cout << " Numthreads is set to: " << numthreads << "\n\n";	
 		}
 
 	//#Start timer

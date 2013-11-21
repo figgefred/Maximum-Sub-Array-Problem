@@ -3,7 +3,7 @@
 # Makefile make me fast and accurate
 
 CC = g++
-FLAGS = -Wall -g --std=c++11 -fopenmp -O
+FLAGS = --std=c++11 -fopenmp -O #-g -Wall
 
 SRC_DIR = src/
 BIN = bin/
@@ -46,11 +46,6 @@ EXE_ARGS = input/test_input_1500.in
 CCFLAGS = -I$(SRC_DIR)
 
 all: $(EXE)
-
-damn:  $(BIN)
-	echo "bajs $(SOURCES_THREAD) $(OBJ_THREAD)"
-	g++ $(SOURCES_THREAD) src/matrix.h $(FLAGS) -o $(OBJ_THREAD)
-	#$(CC) -c $(SOURCES_THREAD) $(CCFLAGS) $(FLAGS) -o $(OBJ_THREAD)
 
 
 
